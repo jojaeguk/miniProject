@@ -3,16 +3,17 @@ var router = express.Router();
 
 var sql = require('../database/sql')
 
-const sectionIcons = [
-  '🍚', '🍿', '🍜', '🍣', '🥩', '☕', '🍰'
-]
-
 const statusKorMap = {
   OPN: '영업중', 
   CLS: '폐업',
   VCT: '휴가중',
   RMD: '리모델링'
 }
+
+
+const sectionIcons = [
+  '🍚', '🍿', '🍜', '🍣', '🥩', '☕', '🍰'
+]
 
 router.get('/', async function(req, res, next) {
 
@@ -51,6 +52,21 @@ router.get('/biz-adv', async function(req, res, next) {
     title: '고급 식당 목록',
     q: req.query,
     businesses
+  });
+});
+
+router.get('/business/:id', async function(req, res, next) {
+  const biz = await sql.getSingleBusinessJoined(req.params.id)
+  biz.status_kor = statusKorMap[biz.status]
+  biz.icon = sectionIcons[biz.section_id - 1]
+
+  const menus = await sql.getMenusOfBusiness(req.params.id)
+  const ratings = await sql.getRatingsOfBusiness(req.params.id)
+
+  res.render('detail', { 
+    biz,
+    menus,
+    ratings
   });
 });
 
